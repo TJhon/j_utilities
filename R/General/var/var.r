@@ -56,9 +56,6 @@ var_irf_tbl <- function(irf_obj){
   return(df)
 }
 
-
-
-
 irf_plot_all <- function(.data, .impulso = NULL, irf_color = '#003f5c', unidad_temporal = "Tiempo", columnas = 2){
   #if(!('irf_tidy' %in% class(.data))){
   #  stop("Se necesita un 'irf_tidy', class")
@@ -153,8 +150,3 @@ irf_plot_imp_res <- function(.data, .impulso = NULL, .respuesta = NULL, irf_colo
   return(.plot)
 }
 
-plot(m1)
-serial.test(m1, lags.pt = 16, type = 'PT.asymptotic')$serial
-
-stability(m1) %>% 
-  plot()
