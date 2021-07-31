@@ -103,7 +103,7 @@ read_dta <- function(path1){
   return(.data)
 }
 
-save_panel <- function(mod, anios){
+save_panel <- function(mod, anios, dlt = T){
   l_anios <- length(anios)
   mod_panel <- 
     dir(here('solo-datos', glue('modulo {mod}')), full.names = T, recursive = T) %>% 
@@ -121,6 +121,9 @@ save_panel <- function(mod, anios){
   mod_panel %>% 
     saveRDS(here('rds', glue('panel_mod_{mod}.rds')))
   paste(mod_panel)
+  if(dlt){
+    try(dir_delete('solo-datos'))
+  }
 }
 
 
