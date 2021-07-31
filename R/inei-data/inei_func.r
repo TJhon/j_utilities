@@ -119,14 +119,21 @@ save_panel <- function(mod, anios, dlt = T){
     map(~mutate(., across(where(is.numeric), as.character))) %>% 
     bind_rows()
   mod_panel %>% 
-    saveRDS(here('rds', glue('panel_mod_{mod}.rds')))
+    saveRDS(here('rds', glue('modulo {mod}', glue('panel_mod_{mod}.rds')))
   paste(mod_panel)
   if(dlt){
     try(dir_delete('solo-datos'))
   }
 }
 
-
+paquete_completo <- function(.mod, .anio, .dlt = T){
+  crp_cre(.mod, .anio)
+  inei_data(.anio, .mod, dlt = .dlt)
+  move_1(dlt = .dlt)
+  save_panel(.mod, .anio, dlt = .dlt)
+ }           
+            
+            
 doc_dta <- function(mod, car_p = 'rds', dlt = F){
   dta <- 'solo-datos'
   docs <- dir(here(dta), mod, recursive = T)
