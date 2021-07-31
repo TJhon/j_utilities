@@ -143,5 +143,4 @@ doc_dta <- function(mod, car_p = 'rds', dlt = F){
   if(dlt){
     try(dir_delete(dta))
   }
-  
 }
