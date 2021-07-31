@@ -108,7 +108,8 @@ save_panel <- function(mod, anios, dlt = T){
   mod_panel <- 
     dir(here('solo-datos', glue('modulo {mod}')), full.names = T, recursive = T) %>% 
     map(read_dta) 
-  mod_panel %>% 
+  problemas <-
+    mod_panel %>% 
     enframe %>% 
     bind_rows %>% 
     count(value) %>% 
@@ -120,7 +121,7 @@ save_panel <- function(mod, anios, dlt = T){
     bind_rows()
   mod_panel %>% 
     saveRDS(here('rds', glue('modulo {mod}', glue('panel_mod_{mod}.rds')))
-  paste(mod_panel)
+  paste(problemas)
   if(dlt){
     try(dir_delete('solo-datos'))
   }
