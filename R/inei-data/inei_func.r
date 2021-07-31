@@ -120,8 +120,8 @@ save_panel <- function(mod, anios, dlt = T){
     map(~mutate(., across(where(is.numeric), as.character))) %>% 
     bind_rows()
   mod_panel %>% 
-    saveRDS(here('rds', glue('modulo {mod}', glue('panel_mod_{mod}.rds')))
-  return(problemas)
+    saveRDS(here('rds', glue('modulo {mod}'), glue('panel_mod_{mod}.rds')))
+  paste(problemas) %>% return()
   if(dlt){
     try(dir_delete('solo-datos'))
   }
