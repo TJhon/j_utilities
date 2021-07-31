@@ -115,4 +115,4 @@ ine_data(anio_p, mod_p, dlt = T)
 move_1(dlt = T)
 doc_dta(mod_p, dlt = T)
 b <- Sys.time()
-b-a
+b-a 
