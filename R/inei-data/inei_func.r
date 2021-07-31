@@ -119,7 +119,7 @@ save_panel <- function(mod, anios){
     map(~mutate(., across(where(is.numeric), as.character))) %>% 
     bind_rows()
   mod_panel %>% 
-    saveRDS(here('rds', 'panel_mod_{mod}.rds'))
+    saveRDS(here('rds', glue('panel_mod_{mod}.rds')))
   paste(mod_panel)
 }
 
