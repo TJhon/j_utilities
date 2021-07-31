@@ -3,7 +3,7 @@ librarian::shelf(tidyverse, glue, fs, here)
 ```
 
 
-# Partes 
+# formatos
 
 Formato de los microdatos, Codio (anio), y modulo
 
@@ -11,18 +11,18 @@ Formato de los microdatos, Codio (anio), y modulo
 anio_p <-
   c(
     687 # 2019
-    #, 634 #2018
+    , 634 #2018
   )
 
 mod_p <- 
   c(
     '01'
     , '02'
- 
-    #'23'
+    , '23'
   )
 ```
 
+# Descarga y movimiento 
 
 ## Crear carpetas
 
@@ -40,15 +40,14 @@ crp_cre <- function(mod, anio){
     map(dir_create)
 }
 
-crp_cre(mod_p, anio_p)
 
 ```
 
 
 ## Descargar y descomprimir archivos
 
-```{r}
-ine_data <- function(anio, mod){
+```{r descarga_unzip}
+ine_data <- function(anio, mod, eliminar, dlt = F){
   mod_l <- length(mod)
   anio_l <- length(anio)
   mapa <- 
@@ -64,6 +63,9 @@ ine_data <- function(anio, mod){
   to_unzip <- pull(mapa, unzip)
   try(download.file(down_1, zip))
   walk2(zip, to_unzip, ~unzip(.x, exdir = .y))
+  if(dlt){
+    try(dir_delete('inei-down'))
+  }
   #unzip(zip)#, exdir = to_unzip)
   #mod <- enquo(mod)
   # Formatod base
@@ -71,20 +73,16 @@ ine_data <- function(anio, mod){
   ## Se opta por Stata por default
 }
 
-ine_data(anio_p, mod_p)
 
 ```
 
 
 ## Seleccionar un tipo de extension y mover
 
-```{r}
-fs::dir_tree()
-```
 
-```{r}
+```{r move_dta}
 
-move_1 <- function(no_deseado = "tabla|otro|dic"){
+move_1 <- function(no_deseado = "tabla|otro|dic", dlt = F){
   docs <- 
     tibble(
       full = dir(here('inei-unzip'), recursive = T, full.names = T, pattern = ".dta$"),
@@ -94,23 +92,19 @@ move_1 <- function(no_deseado = "tabla|otro|dic"){
     mutate(
       real = here(value), 
       anio = str_sub(value, -19, -1) %>% 
-        str_remove('/|-') %>% 
-        str_extract('-(\\d)+')
+        str_extract('-(\\d)+') %>% 
+        str_remove('/|-') 
       , move_to = here('solo-datos', str_sub(value, 1, 9), glue_col('enaho{anio}.dta' ))
     )
   file1 <- pull(docs, full)
   file2 <- pull(docs, move_to)
-  print(file1)
 
-  print(file2)
+  #return(docs)
   walk2(.x = file1, .y = file2, ~file_move(.x, .y))
-  try(dir_delete('inei-unzip'))
+  if(dlt){
+    try(dir_delete('inei-unzip'))
+  }
 }
-
-
-move_1()
-
-
 
 
 ```
@@ -119,14 +113,14 @@ move_1()
 ## Leer el archivo y transformarlo en RDS
 
 
-```{r}
+```{r salvar_rds}
 
 read_n_save <- function(path1, new_path){
   haven::read_dta(path1) %>% 
     saveRDS(new_path)
 }
 
-doc_dta <- function(mod, car_p = 'rds'){
+doc_dta <- function(mod, car_p = 'rds', dlt = F){
   dta <- 'solo-datos'
   docs <- dir(here(dta), mod, recursive = T)
   read_docs <- dir(here(dta), mod, recursive = T, full.names = T)
@@ -141,14 +135,74 @@ doc_dta <- function(mod, car_p = 'rds'){
     )
   path1 <- pull(ls_1, read_docs)
   path2 <- pull(ls_1, rds_name)
-  print(path1)
-  print(path2)
-  
   walk2(.x = path1, .y = path2, ~read_n_save(.x, .y))
+  if(dlt){
+    try(dir_delete(dta))
+  }
   
 }
-doc_dta(mod_p)
 
 
 ```
+
+
+
+
+
+## Prueba
+
+```{r}
+a <- Sys.time()
+crp_cre(mod_p, anio_p)
+ine_data(anio_p, mod_p, dlt = T)
+move_1(dlt = T)
+doc_dta(mod_p, dlt = T)
+b <- Sys.time()
+b-a
+```
+
+
+# Panel data 
+
+
+```{r}
+all <- 
+  dir(here('rds', 'modulo 02'), full.names = T) %>% 
+  map(read_rds) %>% 
+  map(janitor::clean_names) 
+```
+
+```{r}
+anio_colnames <- function(.data){
+  data1 <- 
+    .data %>% 
+    mutate(across(everything(), as.character))
+  anio_dta <- 
+    data1 %>% 
+    select(1) %>% 
+    rename(anio = 1) %>% 
+    count(anio) %>% 
+    pull(anio)
+    #count(1) %>% 
+    #pull(2)
+  names_col <- 
+    .data %>% 
+    names() %>% 
+    enframe() %>% 
+    mutate(anio = anio_dta) %>% 
+    select(!name) %>% 
+    relocate(anio)
+  return(names_col)
+}
+
+anio_colnames(all[[1]])
+```
+
+
+```{r}
+all %>% 
+  map_df(anio_colnames) %>% 
+  count(value)
+```
+
 
