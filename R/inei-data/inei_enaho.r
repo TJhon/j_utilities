@@ -145,18 +145,3 @@ doc_dta <- function(mod, car_p = 'rds', dlt = F){
   }
   
 }
-
-
-a <- Sys.time()
-crp_cre(mod_p, anio_p)
-ine_data(anio_p, mod_p, dlt = T)
-move_1(dlt = T)
-doc_dta(mod_p, dlt = T)
-b <- Sys.time()
-b-a 
-
-
-a <- Sys.time()
-readr::read_rds(here::here('rds', 'real panel data.rds'))
-b <- Sys.time()
-b-a
