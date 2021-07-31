@@ -128,9 +128,13 @@ save_panel <- function(mod, anios, dlt = T){
 }
 
 paquete_completo <- function(.mod, .anio, .dlt = T){
+  print("Creando carpetas")
   crp_cre(.mod, .anio)
+  print("Descargando datos ...")
   inei_data(.anio, .mod, dlt = .dlt)
+  print("Moviendo datos")
   move_1(dlt = .dlt)
+  print("Guardando datos en tipo panel data ...")
   save_panel(.mod, .anio, dlt = .dlt)
  }           
             
