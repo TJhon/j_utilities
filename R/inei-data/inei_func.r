@@ -105,9 +105,11 @@ read_dta <- function(path1){
 
 save_panel <- function(mod, anios, dlt = T){
   l_anios <- length(anios)
+  print("Leyendo archivos *.dta")
   mod_panel <- 
     dir(here('solo-datos', glue('modulo {mod}')), full.names = T, recursive = T) %>% 
     map(read_dta) 
+  print("Recolectando columnnas que faltan en algunas bases de datos")
   problemas <-
     mod_panel %>% 
     enframe %>% 
@@ -115,12 +117,15 @@ save_panel <- function(mod, anios, dlt = T){
     count(value) %>% 
     filter(n < l_anios) %>% 
     pull(value)
+  print("Transformando columnas y uniendo bases de datos")
   panel_bind <- 
     mod_panel %>% 
     map(~mutate(., across(where(is.numeric), as.character))) %>% 
     bind_rows()
+  print("Guardando panel data en la carpeta rds")
   mod_panel %>% 
     saveRDS(here('rds', glue('modulo {mod}'), glue('panel_mod_{mod}.rds')))
+  print("Columnas con problemas")
   paste(problemas) %>% return()
   if(dlt){
     try(dir_delete('solo-datos'))
@@ -134,7 +139,7 @@ paquete_completo <- function(.mod, .anio, .dlt = T){
   inei_data(.anio, .mod, dlt = .dlt)
   print("Moviendo datos")
   move_1(dlt = .dlt)
-  print("Guardando datos en tipo panel data ...")
+  print("Panel data ...")
   save_panel(.mod, .anio, dlt = .dlt)
  }           
             
