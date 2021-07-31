@@ -1,18 +1,32 @@
-anio_p <-
-  c(
-    687 # 2019
-    , 634 #2018
-  )
+enaho_anio <- c(
+  280 # 2004
+  , 281 # 2005
+  , 282 # 2006
+  , 283 # 2007
+  , 284 # 2008
+  , 285 # 2009
+  , 279 # 2010
+  , 291 # 2011
+  , 324 # 2012
+  , 404 # 2013
+  , 440 # 2014
+  , 498 # 2015
+  , 546 # 2016
+  , 603 # 2017
+  , 634 # 2018
+  , 687 # 2019
+  , 737 # 2020
+)
 
-mod_p <- 
-  c(
-    '01'
-    , '02'
-    , '23'
-  )
+modulos <- c(
+  "01"
+  , "02"
+  , "03"
+  , "04"
+  , "05"
+)
 
-
-librarian::shelf(tidyverse, glue, fs, here)
+librarian::shelf(tidyverse, glue, fs, here, janitor)
 
 crp_cre <- function(mod, anio){
   gen <- c('inei-down', 'inei-unzip', 'solo-datos', 'rds')
@@ -24,7 +38,7 @@ crp_cre <- function(mod, anio){
 }
 
 
-ine_data <- function(anio, mod, eliminar, dlt = F){
+inei_data <- function(anio, mod, eliminar, dlt = F){
   mod_l <- length(mod)
   anio_l <- length(anio)
   mapa <- 
@@ -81,10 +95,34 @@ move_1 <- function(no_deseado = "tabla|otro|dic", dlt = F){
 }
 
 
-read_n_save <- function(path1, new_path){
-  haven::read_dta(path1) %>% 
-    saveRDS(new_path)
+read_dta <- function(path1){
+  .data <- 
+    haven::read_dta(path1) %>% 
+    clean_names() %>% 
+    rename(anio = a_no)
+  return(.data)
 }
+
+save_panel <- function(mod, anios){
+  l_anios <- length(anios)
+  mod_panel <- 
+    dir(here('solo-datos', glue('modulo {mod}')), full.names = T, recursive = T) %>% 
+    map(read_dta) 
+  mod_panel %>% 
+    enframe %>% 
+    bind_rows %>% 
+    count(value) %>% 
+    filter(n < l_anios) %>% 
+    pull(value)
+  panel_bind <- 
+    mod_panel %>% 
+    map(~mutate(., across(where(is.numeric), as.character))) %>% 
+    bind_rows()
+  mod_panel %>% 
+    saveRDS(here('rds', 'panel_mod_{mod}.rds'))
+  paste(mod_panel)
+}
+
 
 doc_dta <- function(mod, car_p = 'rds', dlt = F){
   dta <- 'solo-datos'
@@ -116,3 +154,9 @@ move_1(dlt = T)
 doc_dta(mod_p, dlt = T)
 b <- Sys.time()
 b-a 
+
+
+a <- Sys.time()
+readr::read_rds(here::here('rds', 'real panel data.rds'))
+b <- Sys.time()
+b-a
