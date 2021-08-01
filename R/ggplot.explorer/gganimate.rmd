@@ -1,0 +1,106 @@
+```{r}
+librarian::shelf(tidyverse, gganimate, janitor)
+bd_oli <- 
+  read_csv("https://raw.githubusercontent.com/mudit111/bar-chart-race/master/athlete_events.csv") %>% 
+  clean_names()
+
+regiones <- 
+  read_csv("https://raw.githubusercontent.com/rgriff23/Olympic_history/master/data/noc_regions.csv") %>% 
+  clean_names()
+```
+
+```{r}
+
+t_me <- 
+  bd_oli %>% 
+  drop_na(medal, team) %>% 
+  count(team) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:20) %>% 
+  pull(team)
+
+bd_oli  %>% 
+  drop_na(year) %>% 
+  arrange((year))
+
+
+
+bd <- 
+  bd_oli %>% 
+  drop_na(medal, team) %>% 
+  count(team, medal) %>% 
+  group_by(team) %>% 
+  summarise(medal = medal, n = n, n1 = sum(n)) %>% 
+  ungroup() %>% 
+  arrange(desc(team, n)) %>% 
+  mutate(team = as_factor(team)
+         , medal = fct_relevel(medal,  'Gold',  'Silver', 'Bronze' )
+         , team = fct_reorder(team, n1))%>% 
+  filter(team %in% t_me) %>% 
+  ggplot() +
+  aes(team, n, fill = medal) +
+  geom_col() +
+  scale_fill_manual(values = c('gold2', 'gray', "sienna")) +
+  coord_flip() +
+  theme_light() +
+  labs(
+    fill = "Medallas"
+    , y = "Total"
+    , x= ''
+    , title = "Medallas adquiridas"
+    , subtitle = "1896 - 2016"
+       ) 
+  #theme(legend.position = "bottom")
+
+bd
+
+```
+```{r}
+bd <- 
+  bd_oli %>% 
+  drop_na(medal, team) %>% 
+  count(team, medal) %>% 
+  group_by(team) %>% 
+  summarise(medal = medal, n = n, n1 = sum(n)) %>% 
+  ungroup() %>% 
+  arrange(desc(team, n)) %>% 
+  mutate(team = as_factor(team)
+         , medal = fct_relevel(medal,  'Gold',  'Silver', 'Bronze' )
+         , team = fct_reorder(team, n))%>% 
+  filter(team %in% t_me) %>% 
+  ggplot() +
+  aes(team, n, fill = medal) +
+  geom_col() +
+  scale_fill_manual(values = c('gold2', 'gray', "sienna")) +
+  coord_flip() +
+  theme_light() +
+  labs(
+    fill = "Medallas"
+    , y = "Total"
+    , x= ''
+    , title = "Medallas adquiridas"
+    , subtitle = "1896 - 2016"
+       )  +
+  facet_wrap(~medal, scales = 'free_x') +
+  theme(legend.position = 'none')
+bd
+```
+
+
+```{r}
+bd_oli %>% 
+  drop_na(year, team, medal) %>% 
+  count(year, team, medal) %>% 
+  filter(team %in% t_me) %>% 
+  mutate(
+    year1 = paste0(year, "/01/01")
+    , year = lubridate::year(year1)
+    , team = fct_reorder2(team, n, year)
+         ) %>% 
+  ggplot() +
+  aes(fill = medal, x = team, y = n) +
+  geom_col() +
+  coord_flip()  
+  
+```
+
