@@ -2,7 +2,7 @@
 
 Este repositorio esta creado para mis pruebas
 
-Si algo de aqui le sirve, sientase en libertad de usarlo libremente, bastaria con un "gracias".
+Si algo de aqui le sirve, sientase en libertad de usarlo libremente.
 
 
 ## [Modelos VAR](https://github.com/TJhon/j_utilities/tree/main/R/General)
