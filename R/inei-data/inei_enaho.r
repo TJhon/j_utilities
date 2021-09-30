@@ -1,21 +1,21 @@
-enaho_anio <- c(
-  280 # 2004
-  , 281 # 2005
-  , 282 # 2006
-  , 283 # 2007
-  , 284 # 2008
-  , 285 # 2009
-  , 279 # 2010
-  , 291 # 2011
-  , 324 # 2012
-  , 404 # 2013
-  , 440 # 2014
-  , 498 # 2015
-  , 546 # 2016
-  , 603 # 2017
-  , 634 # 2018
-  , 687 # 2019
-  , 737 # 2020
+enaho_anio <- list(
+  '2004' = 280 # 
+  , '2005' = 281 # 
+  , '2006' = 282 # 
+  , '2007' = 283 # 
+  , '2008' = 284 # 
+  , '2009' = 285 # 
+  , '2010' = 279 # 
+  , '2011' = 291 # 
+  , '2012' = 324 # 
+  , '2013' = 404 # 
+  , '2014' = 440 # 
+  , '2015' = 498 # 
+  , '2016' = 546 # 
+  , '2017' = 603 # 
+  , '2018' = 634 # 
+  , '2019' = 687 # 
+  , '2020' = 737 # 
 )
 
 modulos <- c(
@@ -28,25 +28,24 @@ modulos <- c(
 
 librarian::shelf(tidyverse, glue, fs, here, janitor)
 
-crp_cre <- function(mod, anio){
-  gen <- c('inei-down', 'inei-unzip', 'solo-datos', 'rds')
-  mod1 <- glue('modulo {mod}')
-  gen_old <- gen
-  dir_create(gen)
-  map(gen_old, here, mod1) %>% 
-    map(dir_create)
-}
+crp_cre <- 
+  function(.mod, .data = 'enaho', .crp = c('inei-down', 'inei-unzip', 'solo-datos', 'rds')){
+    map(.crp, ~here(.data, .x)) %>% 
+      map(~rep(.x, length(.mod))) %>% 
+      map(~here(.x, .mod)) %>% 
+      map(~try(dir_create(.x)))
+  }
 
 
-inei_data <- function(anio, mod, eliminar, dlt = F){
+inei_data <- function(anio, mod, .data = 'enaho', dlt = F){
   mod_l <- length(mod)
   anio_l <- length(anio)
   mapa <- 
     tibble(anio = rep(anio, mod_l), mod = rep(mod, anio_l)) %>% 
     mutate(
       url = glue_col('http://iinei.inei.gob.pe/iinei/srienaho/descarga/STATA/{anio}-Modulo{mod}.zip')
-      , file = here('inei-down', glue_col('modulo {mod}/{anio}.zip'))
-      , unzip = here('inei-unzip', glue_col('modulo {mod}'))
+      , file = here(.data,  'inei-down', glue_col('modulo {mod}/{anio}.zip'))
+      , unzip = here(.data, 'inei-unzip', glue_col('modulo {mod}'))
     ) %>% 
     arrange(anio, mod)
   down_1 <- pull(mapa, url)
@@ -60,7 +59,7 @@ inei_data <- function(anio, mod, eliminar, dlt = F){
   #try(download.file(down_1, zip))
   walk2(zip, to_unzip, ~unzip(.x, exdir = .y))
   if(dlt){
-    try(dir_delete('inei-down'))
+    try(dir_delete(glue('{.data}/inei-down')))
   }
   #unzip(zip)#, exdir = to_unzip)
   #mod <- enquo(mod)
@@ -95,13 +94,7 @@ move_1 <- function(no_deseado = "tabla|otro|dic", dlt = F){
 }
 
 
-read_dta <- function(path1){
-  .data <- 
-    haven::read_dta(path1) %>% 
-    clean_names() %>% 
-    rename(anio = a_no)
-  return(.data)
-}
+
 
 save_panel <- function(mod, anios){
   l_anios <- length(anios)

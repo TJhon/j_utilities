@@ -1,0 +1,22 @@
+```{r}
+librarian::shelf(tidyverse, glue, fs, here, janitor)
+```
+
+```{r}
+here('enaho', c('2, ', "2"))
+```
+
+
+```{r}
+datos = 'enaho'
+modulos = c('01', '02', "90")
+subcarpetas = c("down", '.dta', "zip", "rds")
+```
+
+```{r}
+map(subcarpetas, ~here(datos, .x)) %>% 
+  map(~rep(.x, length(modulos))) %>% 
+  map(~here(.x, modulos)) %>% 
+  map(~try(dir_create(.x)))
+```
+
